@@ -29,7 +29,11 @@ class StorageTest {
                 sources = Seq("base/project"),
                 excluded = Seq("base/project/target", "base/project/project/target"))),
             libraries = Seq(
-              ModuleLevelLibrary("sbt-and-plugins")))),
+              ModuleLevelLibrary("sbt-and-plugins")),
+            moduleDependencies = Seq(
+              ModuleDependency("id")),
+            libraryDependencies = Seq(
+              LibraryDependency("junit")))),
         libraries = Seq(
           Library("junit",
             classes = Seq("junit.jar"),
@@ -81,6 +85,8 @@ class StorageTest {
               </content>
               <orderEntry type="inheritedJdk"/>
               <orderEntry type="sourceFolder" forTests="false"/>
+              <orderEntry type="module" module-name="id" exported="true"/>
+              <orderEntry type="library" name="junit" level="project"/>
             </component>
           </module>,
 

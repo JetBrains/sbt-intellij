@@ -42,6 +42,9 @@ object Storage {
           {module.contentRoots.map(toXml)}
           <orderEntry type="inheritedJdk" />
           <orderEntry type="sourceFolder" forTests="false" />
+          {module.moduleDependencies.map { it =>
+            <orderEntry type="module" module-name={it.name} exported={format(it.exported)} />
+          }}
           {module.libraryDependencies.map { it =>
             <orderEntry type="library" name={it.name} level={format(it.level)} />
           }}
