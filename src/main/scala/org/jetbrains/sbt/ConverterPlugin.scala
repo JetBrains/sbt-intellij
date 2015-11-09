@@ -13,7 +13,7 @@ import scala.xml.Utility.trim
 /**
   * @author Pavel Fatin
   */
-object ConverterPlugin extends Plugin {
+object ConverterPlugin extends Plugin with (State => State) {
   def convert(state: State) {
     val log = state.log
 
@@ -44,10 +44,10 @@ object ConverterPlugin extends Plugin {
 
     val text = trim(Serializer.toXml(project)).mkString
 
-    Keys.artifactPath.in(Project.current(state)).get(Project.extract(state).structure.data) match {
-      case Some(file) =>
-        log.info("Writing structure to " + file.getPath + "...")
-        write(file, text)
+    intellijOutputPath.in(Project.current(state)).get(Project.extract(state).structure.data) match {
+      case Some(path) =>
+        log.info("Writing structure to " + path + "...")
+        write(new File(path), text)
         log.info("Done.")
       case None =>
         log.info("Writing structure to console:")
@@ -68,18 +68,15 @@ object ConverterPlugin extends Plugin {
     }
   }
 
-  override lazy val settings: Seq[Setting[_]] = Seq(commands += convertProjectCommand)
+  override lazy val settings: Seq[Setting[_]] =
+    Seq(intellijOutputPath := "project.xml", commands += intellijReadCommand, commands += intellijConvertCommand)
 
-  lazy val readProjectCommand = Command.command("read-intellij")((s: State) => ConvertProject(s))
+  lazy val intellijReadCommand = Command.command("intellij-read") { state => read(state); state}
 
-  lazy val convertProjectCommand = Command.command("gen-intellij")((s: State) => ConvertProject(s))
+  lazy val intellijConvertCommand = Command.command("intellij-convert") { state => convert(state); state}
+
+  lazy val intellijOutputPath = settingKey[String]("Project structure XML output path for 'intellij-read' command")
+
+  def apply(state: State): State = state.copy(definedCommands =
+    state.definedCommands :+ intellijReadCommand :+ intellijConvertCommand)
 }
-
-object ReadProjectModel extends (State => State) {
-  def apply(state: State) = Function.const(state)(ConverterPlugin.read(state))
-}
-
-object ConvertProject extends (State => State) {
-  def apply(state: State) = Function.const(state)(ConverterPlugin.convert(state))
-}
-
