@@ -6,23 +6,19 @@ lazy val ideaProjectModel =
   (project in file("idea-project-model"))
     .settings(libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test)
 
-// sbt-launch scope has to be Compile instead of Runtime to be included in the assembly
 lazy val launcher =
   (project in file("launcher"))
-    .settings(
-      autoScalaLibrary := false,
-      libraryDependencies += "com.typesafe.sbt" % "sbt-launcher" % "0.13.6" % Compile
-    )
+    .settings(autoScalaLibrary := false)
 
-// launcher has to be declared as dependency to be included in the assembly
 lazy val root =
   (project in file(".")).
-    dependsOn(ideaProjectModel, sbtProjectModel, launcher).
-    settings(
+    dependsOn(ideaProjectModel, sbtProjectModel, launcher % Runtime)
+    .settings(
       name := "sbt-intellij",
       version := "1.0",
       sbtPlugin := true,
-      libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test
+      libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % Test//,
+//      libraryDependencies += "org.scala-sbt" % "sbt-launch" % "0.13.6" % Runtime
     )
 
 mainClass in assembly := Some("org.jetbrains.sbt.Launcher")

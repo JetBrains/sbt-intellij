@@ -14,7 +14,7 @@ public class Launcher {
 
     public static void main(String[] args) throws Exception {
         URL thisJar = Launcher.class.getProtectionDomain().getCodeSource().getLocation();
-        String thisJarPath = new File(thisJar.toURI().getPath()).getPath();
+        String thisJarPath = new File(thisJar.toURI().getPath()).getPath(); // TODO spaces?
 
         if (!thisJarPath.endsWith(".jar")) {
             System.err.println("Launcher must be run as a jar file.");
@@ -45,7 +45,7 @@ public class Launcher {
         Class sbtLauncherClass = Class.forName(SBT_LAUNCHER_MAIN_CLASS, true, classLoader);
         Method method = sbtLauncherClass.getMethod("main", String[].class);
 
-        String command = ";apply -cp " + thisJarPath + " org.jetbrains.sbt.ConverterPlugin ;intellij-read";
+        String command = ";apply -cp " + thisJarPath + " org.jetbrains.sbt.ConverterPlugin ;intellij-convert";
 
         method.invoke(null, new Object[]{new String[]{command}});
     }

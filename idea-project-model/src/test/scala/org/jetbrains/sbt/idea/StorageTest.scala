@@ -61,7 +61,7 @@ class StorageTest {
             </component>
           </project>,
 
-        ".idea/modules/id.xml" ->
+        ".idea/modules/id.iml" ->
           <module type="JAVA_MODULE" version="4">
             <component name="NewModuleRootManager" inherit-compiler-output="true">
               <content url="file://$MODULE_DIR$/../../idea-project-model">
@@ -72,7 +72,7 @@ class StorageTest {
             </component>
           </module>,
 
-        ".idea/modules/id-build.xml" ->
+        ".idea/modules/id-build.iml" ->
           <module type="SBT_MODULE" version="4">
             <component name="NewModuleRootManager" inherit-compiler-output="false">
               <output url="file://$MODULE_DIR$/../../base/project/target/idea-classes"/>

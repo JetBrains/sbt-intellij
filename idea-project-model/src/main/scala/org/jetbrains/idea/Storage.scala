@@ -23,7 +23,7 @@ object Storage {
 
   def toXml(project: Project): Map[Path, Elem] = {
     val index = (".idea/modules.xml", trim(toXml(project.modules.map(_.name))))
-    val modules = project.modules.map(it => (".idea/modules" / s"${it.name}.xml", trim(toXml(it))))
+    val modules = project.modules.map(it => (".idea/modules" / s"${it.name}.iml", trim(toXml(it))))
     val libraries = project.libraries.map(it => (".idea/libraries" / s"${escape(it.name)}.xml", trim(toXml(it))))
     val scalaSdks = project.scalaSdks.map(it => (".idea/libraries" / s"${escape(it.name)}.xml", trim(toXml(it))))
     Map(index +: (modules ++ libraries ++ scalaSdks): _*)
