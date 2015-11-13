@@ -23,23 +23,23 @@ object Storage {
 
   def toXml(project: Project): Map[Path, Elem] = {
     val index = (".idea/modules.xml", trim(toXml(project.modules.map(_.name))))
-    val modules = project.modules.map(it => (".idea/modules" / s"${it.name}.iml", trim(toXml(it))))
+    val modules = project.modules.map(it => (".idea/modules" / s"${it.name}.iml", trim(toXml(it, canonical(project.base)))))
     val libraries = project.libraries.map(it => (".idea/libraries" / s"${escape(it.name)}.xml", trim(toXml(it))))
     val scalaSdks = project.scalaSdks.map(it => (".idea/libraries" / s"${escape(it.name)}.xml", trim(toXml(it))))
     Map(index +: (modules ++ libraries ++ scalaSdks): _*)
   }
 
-  private def toXml(module: Module): Elem =
+  private def toXml(module: Module, base: Path): Elem =
       <module type={format(module.kind)} version="4">
         <component name="NewModuleRootManager" inherit-compiler-output={format(module.outputPaths.isEmpty)} >
           {module.outputPaths.toSeq.flatMap { paths =>
-            <output url={"file://$MODULE_DIR$/../../" + paths.production}/>
-            <output-test url={"file://$MODULE_DIR$/../../" + paths.test}/>
+            <output url={"file://$MODULE_DIR$/../.." + relative(base, canonical(paths.production))}/>
+            <output-test url={"file://$MODULE_DIR$/../.." + relative(base, canonical(paths.test))}/>
           }}
           {if (module.outputPaths.exists(_.exclude)) {
             <exclude-output />
           }}
-          {module.contentRoots.map(toXml)}
+          {module.contentRoots.map(it => toXml(it, canonical(base)))}
           <orderEntry type="inheritedJdk" />
           <orderEntry type="sourceFolder" forTests="false" />
           {module.moduleDependencies.map { it =>
@@ -51,13 +51,13 @@ object Storage {
         </component>
       </module>
 
-  private def toXml(root: ContentRoot): Elem =
-    <content url="file://$MODULE_DIR$/../../idea-project-model">
-      {root.sources.map(it => <sourceFolder url={"file://$MODULE_DIR$/../../" + it} isTestSource="false"/>)}
-      {root.testSources.map(it => <sourceFolder url={"file://$MODULE_DIR$/../../" + it} isTestSource="true"/>)}
-      {root.resources.map(it => <sourceFolder url={"file://$MODULE_DIR$/../../" + it} type="java-resource"/>)}
-      {root.testResources.map(it => <sourceFolder url={"file://$MODULE_DIR$/../../" + it} type="java-test-resource"/>)}
-      {root.excluded.map(it => <excludeFolder url={"file://$MODULE_DIR$/../../" + it}/>)}
+  private def toXml(root: ContentRoot, base: Path): Elem =
+    <content url={"file://$MODULE_DIR$/../.." + relative(base, canonical(root.base))}>
+      {root.sources.map(it => <sourceFolder url={"file://$MODULE_DIR$/../.." + relative(base, canonical(it))} isTestSource="false"/>)}
+      {root.testSources.map(it => <sourceFolder url={"file://$MODULE_DIR$/../.." + relative(base, canonical(it))} isTestSource="true"/>)}
+      {root.resources.map(it => <sourceFolder url={"file://$MODULE_DIR$/../.." + relative(base, canonical(it))} type="java-resource"/>)}
+      {root.testResources.map(it => <sourceFolder url={"file://$MODULE_DIR$/../.." + relative(base, canonical(it))} type="java-test-resource"/>)}
+      {root.excluded.map(it => <excludeFolder url={"file://$MODULE_DIR$/../.." + relative(base, canonical(it))}/>)}
     </content>
 
   private def toXml(modules: Seq[String]): Elem =
@@ -126,4 +126,10 @@ object Storage {
   private def trim(elem: Elem): Elem = Utility.trim(elem).asInstanceOf[Elem]
 
   private def escape(name: String) = name.map(c => if (c.isLetterOrDigit) c else '_')
+
+  private def canonical(path: Path): Path = path.replace('\\', '/')
+
+  private def relative(base: Path, path: Path): Path = {
+    if (path.startsWith(base)) path.substring(base.length) else path
+  }
 }

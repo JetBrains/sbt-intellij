@@ -19,6 +19,10 @@ class StorageTest {
           Module("id",
             contentRoots = Seq(
               ContentRoot("base",
+                sources = Seq("base/src/main/scala"),
+                resources = Seq("base/src/main/resources"),
+                testSources = Seq("base/src/test/scala"),
+                testResources = Seq("base/src/test/resources"),
                 excluded = Seq("base/target")))),
           Module("id-build", ModuleKind.Sbt,
             outputPaths = Some(OutputPaths(
@@ -64,8 +68,12 @@ class StorageTest {
         ".idea/modules/id.iml" ->
           <module type="JAVA_MODULE" version="4">
             <component name="NewModuleRootManager" inherit-compiler-output="true">
-              <content url="file://$MODULE_DIR$/../../idea-project-model">
-                <excludeFolder url="file://$MODULE_DIR$/../../base/target"/>
+              <content url="file://$MODULE_DIR$/../..">
+                <sourceFolder url="file://$MODULE_DIR$/../../src/main/scala" isTestSource="false" />
+                <sourceFolder url="file://$MODULE_DIR$/../../src/test/scala" isTestSource="true" />
+                <sourceFolder url="file://$MODULE_DIR$/../../src/main/resources" type="java-resource" />
+                <sourceFolder url="file://$MODULE_DIR$/../../src/test/resources" type="java-test-resource" />
+                <excludeFolder url="file://$MODULE_DIR$/../../target"/>
               </content>
               <orderEntry type="inheritedJdk"/>
               <orderEntry type="sourceFolder" forTests="false"/>
@@ -75,13 +83,13 @@ class StorageTest {
         ".idea/modules/id-build.iml" ->
           <module type="SBT_MODULE" version="4">
             <component name="NewModuleRootManager" inherit-compiler-output="false">
-              <output url="file://$MODULE_DIR$/../../base/project/target/idea-classes"/>
-              <output-test url="file://$MODULE_DIR$/../../base/project/target/idea-test-classes"/>
+              <output url="file://$MODULE_DIR$/../../project/target/idea-classes"/>
+              <output-test url="file://$MODULE_DIR$/../../project/target/idea-test-classes"/>
               <exclude-output/>
-              <content url="file://$MODULE_DIR$/../../idea-project-model">
-                <sourceFolder url="file://$MODULE_DIR$/../../base/project" isTestSource="false"/>
-                <excludeFolder url="file://$MODULE_DIR$/../../base/project/target"/>
-                <excludeFolder url="file://$MODULE_DIR$/../../base/project/project/target"/>
+              <content url="file://$MODULE_DIR$/../../project">
+                <sourceFolder url="file://$MODULE_DIR$/../../project" isTestSource="false"/>
+                <excludeFolder url="file://$MODULE_DIR$/../../project/target"/>
+                <excludeFolder url="file://$MODULE_DIR$/../../project/project/target"/>
               </content>
               <orderEntry type="inheritedJdk"/>
               <orderEntry type="sourceFolder" forTests="false"/>
