@@ -48,6 +48,21 @@ object Storage {
           {module.libraryDependencies.map { it =>
             <orderEntry type="library" name={it.name} level={format(it.level)} />
           }}
+          {module.libraries.map { library =>
+            <orderEntry type="module-library">
+              <library name={library.name}>
+                <CLASSES>
+                  {library.classes.map(url => <root url={url + "!/"}/>)}
+                </CLASSES>
+                <JAVADOC>
+                  {library.docs.map(url => <root url={url + "!/"}/>)}
+                </JAVADOC>
+                <SOURCES>
+                  {library.sources.map(url => <root url={url + "!/"}/>)}
+                </SOURCES>
+              </library>
+            </orderEntry>
+          }}
         </component>
       </module>
 

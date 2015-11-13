@@ -33,7 +33,10 @@ class StorageTest {
                 sources = Seq("base/project"),
                 excluded = Seq("base/project/target", "base/project/project/target"))),
             libraries = Seq(
-              ModuleLevelLibrary("sbt-and-plugins")),
+              ModuleLevelLibrary("sbt-and-plugins",
+                classes = Seq("sbt.jar"),
+                sources = Seq("sbt-sources.jar"),
+                docs = Seq("sbt-javadoc.jar"))),
             moduleDependencies = Seq(
               ModuleDependency("id")),
             libraryDependencies = Seq(
@@ -41,14 +44,14 @@ class StorageTest {
         libraries = Seq(
           Library("junit",
             classes = Seq("junit.jar"),
-            sources = Seq("junit-src.jar"),
-            docs = Seq("junit-doc.jar"))
+            sources = Seq("junit-sources.jar"),
+            docs = Seq("junit-javadoc.jar"))
         ),
         scalaSdks = Seq(
           ScalaSdk("scala-sdk", "2.11",
             classes = Seq("scala-library.jar"),
-            sources = Seq("scala-library-src.jar"),
-            docs = Seq("scala-library-doc.jar"),
+            sources = Seq("scala-library-sources.jar"),
+            docs = Seq("scala-library-javadoc.jar"),
             compilerClasspath = Seq("scala-compiler.jar", "scala-library.jar"))
         )
       )
@@ -95,6 +98,19 @@ class StorageTest {
               <orderEntry type="sourceFolder" forTests="false"/>
               <orderEntry type="module" module-name="id" exported="true"/>
               <orderEntry type="library" name="junit" level="project"/>
+              <orderEntry type="module-library">
+                <library name="sbt-and-plugins">
+                  <CLASSES>
+                    <root url="sbt.jar!/"/>
+                  </CLASSES>
+                  <JAVADOC>
+                    <root url="sbt-javadoc.jar!/"/>
+                  </JAVADOC>
+                  <SOURCES>
+                    <root url="sbt-sources.jar!/"/>
+                  </SOURCES>
+                </library>
+              </orderEntry>
             </component>
           </module>,
 
@@ -105,10 +121,10 @@ class StorageTest {
                 <root url="junit.jar!/"/>
               </CLASSES>
               <JAVADOC>
-                <root url="junit-doc.jar!/"/>
+                <root url="junit-javadoc.jar!/"/>
               </JAVADOC>
               <SOURCES>
-                <root url="junit-src.jar!/"/>
+                <root url="junit-sources.jar!/"/>
               </SOURCES>
             </library>
           </component>,
@@ -127,10 +143,10 @@ class StorageTest {
                 <root url="scala-library.jar"/>
               </CLASSES>
               <JAVADOC>
-                <root url="scala-library-doc.jar"/>
+                <root url="scala-library-javadoc.jar"/>
               </JAVADOC>
               <SOURCES>
-                <root url="scala-library-src.jar"/>
+                <root url="scala-library-sources.jar"/>
               </SOURCES>
             </library>
           </component>
