@@ -26,7 +26,7 @@ object ConverterPlugin extends Plugin with (State => State) {
     val project = Converter.convert(currentDirectory, structure, None)
 
     log.info("Writing IDEA project definition...")
-    Storage.write(currentDirectory, project, System.getProperty("user.home"))
+    Storage.write(new File(currentDirectory), project, System.getProperty("user.home"))
 
     log.info("Done.")
   }

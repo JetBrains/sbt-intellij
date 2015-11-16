@@ -10,8 +10,8 @@ import scala.xml.{Elem, Text, Utility}
  * @author Pavel Fatin
  */
 object Storage {
-  def write(root: String, project: Project, home: Path) {
-    toXml(project, canonical(home)).foreach { case (path, node) =>
+  def write(root: File, project: Project, home: Path) {
+    toXml(project, home).foreach { case (path, node) =>
       val file = new File(root, path)
       val directory = file.getParentFile
       if (!directory.exists) {
@@ -22,24 +22,33 @@ object Storage {
   }
 
   def toXml(project: Project, home: Path): Map[Path, Elem] = {
-    val index = (".idea/modules.xml", trim(toXml(project.modules.map(_.name))))
-    val modules = project.modules.map(path => (".idea/modules" / s"${path.name}.iml", trim(toXml(path, canonical(project.base), home))))
-    val libraries = project.libraries.map(path => (".idea/libraries" / s"${escape(path.name)}.xml", trim(toXml(path, home))))
-    val scalaSdks = project.scalaSdks.map(path => (".idea/libraries" / s"${escape(path.name)}.xml", trim(toXml(path, home))))
+    val projectFs = FileSystem.Instance
+      .withAlias(home, "$USER_HOME$")
+      .withAlias(project.base, "$PROJECT_DIR$")
+
+    val moduleDirectory = s"${project.base}/.idea/modules"
+
+    val moduleFs = projectFs
+      .withAlias(project.base, "$MODULE_DIR$/../..")
+
+    val index = (".idea/modules.xml", trim(toXml(project.modules.map(_.name), moduleDirectory, projectFs)))
+    val modules = project.modules.map(path => (".idea/modules" / s"${path.name}.iml", trim(toXml(path, moduleFs))))
+    val libraries = project.libraries.map(path => (".idea/libraries" / s"${escape(path.name)}.xml", trim(toXml(path, moduleFs))))
+    val scalaSdks = project.scalaSdks.map(path => (".idea/libraries" / s"${escape(path.name)}.xml", trim(toXml(path, moduleFs))))
     Map(index +: (modules ++ libraries ++ scalaSdks): _*)
   }
 
-  private def toXml(module: Module, base: Path, home: Path): Elem =
+  private def toXml(module: Module, fs: FileSystem): Elem =
       <module type={format(module.kind)} version="4">
         <component name="NewModuleRootManager" inherit-compiler-output={format(module.outputPaths.isEmpty)} >
           {module.outputPaths.toSeq.flatMap { paths =>
-            <output url={"file://$MODULE_DIR$/../.." + relative(base, canonical(paths.production))}/>
-            <output-test url={"file://$MODULE_DIR$/../.." + relative(base, canonical(paths.test))}/>
+            <output url={fs.fileUrlFrom(paths.production)}/>
+            <output-test url={fs.fileUrlFrom(paths.test)}/>
           }}
           {if (module.outputPaths.exists(_.exclude)) {
             <exclude-output />
           }}
-          {module.contentRoots.map(it => toXml(it, canonical(base)))}
+          {module.contentRoots.map(it => toXml(it, fs))}
           <orderEntry type="inheritedJdk" />
           <orderEntry type="sourceFolder" forTests="false" />
           {module.moduleDependencies.map { it =>
@@ -52,13 +61,13 @@ object Storage {
             <orderEntry type="module-library">
               <library name={library.name}>
                 <CLASSES>
-                  {library.classes.map(path => <root url={"jar://$USER_HOME$" + relative(home, canonical(path)) + "!/"}/>)}
+                  {library.classes.map(path => <root url={fs.urlFrom(path)}/>)}
                 </CLASSES>
                 <JAVADOC>
-                  {library.docs.map(path => <root url={"jar://$USER_HOME$" + relative(home, canonical(path)) + "!/"}/>)}
+                  {library.docs.map(path => <root url={fs.urlFrom(path)}/>)}
                 </JAVADOC>
                 <SOURCES>
-                  {library.sources.map(path => <root url={"jar://$USER_HOME$" + relative(home, canonical(path)) + "!/"}/>)}
+                  {library.sources.map(path => <root url={fs.urlFrom(path)}/>)}
                 </SOURCES>
               </library>
             </orderEntry>
@@ -66,58 +75,59 @@ object Storage {
         </component>
       </module>
 
-  private def toXml(root: ContentRoot, base: Path): Elem =
-    <content url={"file://$MODULE_DIR$/../.." + relative(base, canonical(root.base))}>
-      {root.sources.map(path => <sourceFolder url={"file://$MODULE_DIR$/../.." + relative(base, canonical(path))} isTestSource="false"/>)}
-      {root.testSources.map(path => <sourceFolder url={"file://$MODULE_DIR$/../.." + relative(base, canonical(path))} isTestSource="true"/>)}
-      {root.resources.map(path => <sourceFolder url={"file://$MODULE_DIR$/../.." + relative(base, canonical(path))} type="java-resource"/>)}
-      {root.testResources.map(path => <sourceFolder url={"file://$MODULE_DIR$/../.." + relative(base, canonical(path))} type="java-test-resource"/>)}
-      {root.excluded.map(path => <excludeFolder url={"file://$MODULE_DIR$/../.." + relative(base, canonical(path))}/>)}
+  private def toXml(root: ContentRoot, fs: FileSystem): Elem =
+    <content url={fs.fileUrlFrom(root.base)}>
+      {root.sources.map(path => <sourceFolder url={fs.fileUrlFrom(path)} isTestSource="false"/>)}
+      {root.testSources.map(path => <sourceFolder url={fs.fileUrlFrom(path)} isTestSource="true"/>)}
+      {root.resources.map(path => <sourceFolder url={fs.fileUrlFrom(path)} type="java-resource"/>)}
+      {root.testResources.map(path => <sourceFolder url={fs.fileUrlFrom(path)} type="java-test-resource"/>)}
+      {root.excluded.map(path => <excludeFolder url={fs.fileUrlFrom(path)}/>)}
     </content>
 
-  private def toXml(modules: Seq[String]): Elem =
+  private def toXml(modules: Seq[String], directory: Path, fs: FileSystem): Elem =
     <project version="4">
       <component name="ProjectModuleManager">
         <modules>
           {modules.map { module =>
-            <module fileurl={s"file://$$PROJECT_DIR$$/.idea/modules/$module.iml"} filepath={s"$$PROJECT_DIR$$/.idea/modules/$module.iml"} />
+            val moduleFilePath: Path = s"$directory/$module.iml"
+            <module fileurl={fs.urlFrom(moduleFilePath)} filepath={fs.pathFrom(moduleFilePath)} />
           }}
         </modules>
       </component>
     </project>
 
-  private def toXml(library: Library, home: Path): Elem =
+  private def toXml(library: Library, fs: FileSystem): Elem =
     <component name="libraryTable">
       <library name={library.name}>
         <CLASSES>
-          {library.classes.map(path => <root url={"jar://$USER_HOME$" + relative(home, canonical(path)) + "!/"}/>)}
+          {library.classes.map(path => <root url={fs.urlFrom(path)}/>)}
         </CLASSES>
         <JAVADOC>
-          {library.docs.map(path => <root url={"jar://$USER_HOME$" + relative(home, canonical(path)) + "!/"}/>)}
+          {library.docs.map(path => <root url={fs.urlFrom(path)}/>)}
         </JAVADOC>
         <SOURCES>
-          {library.sources.map(path => <root url={"jar://$USER_HOME$" + relative(home, canonical(path)) + "!/"}/>)}
+          {library.sources.map(path => <root url={fs.urlFrom(path)}/>)}
         </SOURCES>
       </library>
     </component>
 
-  private def toXml(sdk: ScalaSdk, home: Path): Elem =
+  private def toXml(sdk: ScalaSdk, fs: FileSystem): Elem =
     <component name="libraryTable">
       <library name={sdk.name} type="Scala">
         <properties>
           <option name="languageLevel" value={sdk.languageLevel} />
           <compiler-classpath>
-            {sdk.compilerClasspath.map(path => <root url={"file://$USER_HOME$" + relative(home, canonical(path))}/>)}
+            {sdk.compilerClasspath.map(path => <root url={fs.fileUrlFrom(path)}/>)}
           </compiler-classpath>
         </properties>
         <CLASSES>
-          {sdk.classes.map(path => <root url={"jar://$USER_HOME$" + relative(home, canonical(path)) + "!/"}/>)}
+          {sdk.classes.map(path => <root url={fs.urlFrom(path)}/>)}
         </CLASSES>
         <JAVADOC>
-          {sdk.docs.map(path => <root url={"jar://$USER_HOME$" + relative(home, canonical(path)) + "!/"}/>)}
+          {sdk.docs.map(path => <root url={fs.urlFrom(path)}/>)}
         </JAVADOC>
         <SOURCES>
-          {sdk.sources.map(path => <root url={"jar://$USER_HOME$" + relative(home, canonical(path)) + "!/"}/>)}
+          {sdk.sources.map(path => <root url={fs.urlFrom(path)}/>)}
         </SOURCES>
       </library>
     </component>
@@ -141,10 +151,4 @@ object Storage {
   private def trim(elem: Elem): Elem = Utility.trim(elem).asInstanceOf[Elem]
 
   private def escape(name: String) = name.map(c => if (c.isLetterOrDigit) c else '_')
-
-  private def canonical(path: Path): Path = path.replace('\\', '/')
-
-  private def relative(base: Path, path: Path): Path = {
-    if (path.startsWith(base)) path.substring(base.length) else path
-  }
 }
