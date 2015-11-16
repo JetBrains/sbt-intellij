@@ -34,25 +34,25 @@ class StorageTest {
                 excluded = Seq("base/project/target", "base/project/project/target"))),
             libraries = Seq(
               ModuleLevelLibrary("sbt-and-plugins",
-                classes = Seq("sbt.jar"),
-                sources = Seq("sbt-sources.jar"),
-                docs = Seq("sbt-javadoc.jar"))),
+                classes = Seq("home/sbt.jar"),
+                sources = Seq("home/sbt-sources.jar"),
+                docs = Seq("home/sbt-javadoc.jar"))),
             moduleDependencies = Seq(
               ModuleDependency("id")),
             libraryDependencies = Seq(
               LibraryDependency("junit")))),
         libraries = Seq(
           Library("junit",
-            classes = Seq("junit.jar"),
-            sources = Seq("junit-sources.jar"),
-            docs = Seq("junit-javadoc.jar"))
+            classes = Seq("home/junit.jar"),
+            sources = Seq("home/junit-sources.jar"),
+            docs = Seq("home/junit-javadoc.jar"))
         ),
         scalaSdks = Seq(
           ScalaSdk("scala-sdk", "2.11",
-            classes = Seq("scala-library.jar"),
-            sources = Seq("scala-library-sources.jar"),
-            docs = Seq("scala-library-javadoc.jar"),
-            compilerClasspath = Seq("scala-compiler.jar", "scala-library.jar"))
+            classes = Seq("home/scala-library.jar"),
+            sources = Seq("home/scala-library-sources.jar"),
+            docs = Seq("home/scala-library-javadoc.jar"),
+            compilerClasspath = Seq("home/scala-compiler.jar", "home/scala-library.jar"))
         )
       )
 
@@ -101,13 +101,13 @@ class StorageTest {
               <orderEntry type="module-library">
                 <library name="sbt-and-plugins">
                   <CLASSES>
-                    <root url="sbt.jar!/"/>
+                    <root url="jar://$USER_HOME$/sbt.jar!/"/>
                   </CLASSES>
                   <JAVADOC>
-                    <root url="sbt-javadoc.jar!/"/>
+                    <root url="jar://$USER_HOME$/sbt-javadoc.jar!/"/>
                   </JAVADOC>
                   <SOURCES>
-                    <root url="sbt-sources.jar!/"/>
+                    <root url="jar://$USER_HOME$/sbt-sources.jar!/"/>
                   </SOURCES>
                 </library>
               </orderEntry>
@@ -118,13 +118,13 @@ class StorageTest {
           <component name="libraryTable">
             <library name="junit">
               <CLASSES>
-                <root url="junit.jar!/"/>
+                <root url="jar://$USER_HOME$/junit.jar!/"/>
               </CLASSES>
               <JAVADOC>
-                <root url="junit-javadoc.jar!/"/>
+                <root url="jar://$USER_HOME$/junit-javadoc.jar!/"/>
               </JAVADOC>
               <SOURCES>
-                <root url="junit-sources.jar!/"/>
+                <root url="jar://$USER_HOME$/junit-sources.jar!/"/>
               </SOURCES>
             </library>
           </component>,
@@ -135,18 +135,18 @@ class StorageTest {
               <properties>
                 <option name="languageLevel" value="2.11"/>
                 <compiler-classpath>
-                  <root url="scala-compiler.jar"/>
-                  <root url="scala-library.jar"/>
+                  <root url="file://$USER_HOME$/scala-compiler.jar"/>
+                  <root url="file://$USER_HOME$/scala-library.jar"/>
                 </compiler-classpath>
               </properties>
               <CLASSES>
-                <root url="scala-library.jar"/>
+                <root url="jar://$USER_HOME$/scala-library.jar!/"/>
               </CLASSES>
               <JAVADOC>
-                <root url="scala-library-javadoc.jar"/>
+                <root url="jar://$USER_HOME$/scala-library-javadoc.jar!/"/>
               </JAVADOC>
               <SOURCES>
-                <root url="scala-library-sources.jar"/>
+                <root url="jar://$USER_HOME$/scala-library-sources.jar!/"/>
               </SOURCES>
             </library>
           </component>
@@ -154,7 +154,7 @@ class StorageTest {
   }
 
   private def assertSerialized(project: Project, expected: Map[Path, Elem]): Unit = {
-    val actual = Storage.toXml(project)
+    val actual = Storage.toXml(project, "home")
 
     if (expected.map(p => (p._1, trim(p._2))) != actual) {
       val printer = new PrettyPrinter(120, 2)
