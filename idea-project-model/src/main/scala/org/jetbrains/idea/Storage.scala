@@ -10,8 +10,8 @@ import scala.xml.{Elem, Text, Utility}
  * @author Pavel Fatin
  */
 object Storage {
-  def write(root: File, project: Project, home: Path) {
-    toXml(project, home).foreach { case (path, node) =>
+  def write(root: File, project: Project, prefix: String, home: Path) {
+    toXml(project, prefix, home).foreach { case (path, node) =>
       val file = new File(root, path)
       val directory = file.getParentFile
       if (!directory.exists) {
@@ -21,7 +21,7 @@ object Storage {
     }
   }
 
-  def toXml(project: Project, home: Path): Map[Path, Elem] = {
+  def toXml(project: Project, prefix: String, home: Path): Map[Path, Elem] = {
     val projectFs = FileSystem.Instance
       .withAlias(home, "$USER_HOME$")
       .withAlias(project.base, "$PROJECT_DIR$")
@@ -32,13 +32,13 @@ object Storage {
       .withAlias(project.base, "$MODULE_DIR$/../..")
 
     val index = (".idea/modules.xml", trim(toXml(project.modules.map(_.name), moduleDirectory, projectFs)))
-    val modules = project.modules.map(path => (".idea/modules" / s"${path.name}.iml", trim(toXml(path, moduleFs))))
-    val libraries = project.libraries.map(path => (".idea/libraries" / s"${escape(path.name)}.xml", trim(toXml(path, moduleFs))))
-    val scalaSdks = project.scalaSdks.map(path => (".idea/libraries" / s"${escape(path.name)}.xml", trim(toXml(path, moduleFs))))
+    val modules = project.modules.map(module => (".idea/modules" / s"${module.name}.iml", trim(toXml(module, prefix, moduleFs))))
+    val libraries = project.libraries.map(library => (".idea/libraries" / s"${escape(library.name)}.xml", trim(toXml(library, prefix, moduleFs))))
+    val scalaSdks = project.scalaSdks.map(sdk => (".idea/libraries" / s"${escape(sdk.name)}.xml", trim(toXml(sdk, prefix, moduleFs))))
     Map(index +: (modules ++ libraries ++ scalaSdks): _*)
   }
 
-  private def toXml(module: Module, fs: FileSystem): Elem =
+  private def toXml(module: Module, prefix: String, fs: FileSystem): Elem =
       <module type={format(module.kind)} version="4"
               sbt.imports={module.sbtData.map(_.imports.mkString(", ")).map(Text(_))}
               sbt.resolvers={module.sbtData.map(_.resolvers.map(format).mkString(", ")).map(Text(_))}>
@@ -57,11 +57,11 @@ object Storage {
             <orderEntry type="module" module-name={it.name} exported={format(it.exported)} />
           }}
           {module.libraryDependencies.map { it =>
-            <orderEntry type="library" name={it.name} level={format(it.level)} />
+            <orderEntry type="library" name={prefix + it.name} level={format(it.level)} />
           }}
           {module.libraries.map { library =>
             <orderEntry type="module-library">
-              <library name={library.name}>
+              <library name={prefix + library.name}>
                 <CLASSES>
                   {library.classes.map(path => <root url={fs.urlFrom(path)}/>)}
                 </CLASSES>
@@ -100,9 +100,9 @@ object Storage {
       </component>
     </project>
 
-  private def toXml(library: Library, fs: FileSystem): Elem =
+  private def toXml(library: Library, prefix: String, fs: FileSystem): Elem =
     <component name="libraryTable">
-      <library name={library.name}>
+      <library name={prefix + library.name}>
         <CLASSES>
           {library.classes.map(path => <root url={fs.urlFrom(path)}/>)}
         </CLASSES>
@@ -115,9 +115,9 @@ object Storage {
       </library>
     </component>
 
-  private def toXml(sdk: ScalaSdk, fs: FileSystem): Elem =
+  private def toXml(sdk: ScalaSdk, prefix: String, fs: FileSystem): Elem =
     <component name="libraryTable">
-      <library name={sdk.name} type="Scala">
+      <library name={prefix + sdk.name} type="Scala">
         <properties>
           <option name="languageLevel" value={sdk.languageLevel} />
           <compiler-classpath>

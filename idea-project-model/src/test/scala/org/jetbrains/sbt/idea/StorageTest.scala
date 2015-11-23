@@ -100,9 +100,9 @@ class StorageTest {
               <orderEntry type="inheritedJdk"/>
               <orderEntry type="sourceFolder" forTests="false"/>
               <orderEntry type="module" module-name="id" exported="true"/>
-              <orderEntry type="library" name="junit" level="project"/>
+              <orderEntry type="library" name="prefix: junit" level="project"/>
               <orderEntry type="module-library">
-                <library name="sbt-and-plugins">
+                <library name="prefix: sbt-and-plugins">
                   <CLASSES>
                     <root url="jar://$USER_HOME$/sbt.jar!/"/>
                   </CLASSES>
@@ -119,7 +119,7 @@ class StorageTest {
 
         ".idea/libraries/junit.xml" ->
           <component name="libraryTable">
-            <library name="junit">
+            <library name="prefix: junit">
               <CLASSES>
                 <root url="jar://$USER_HOME$/junit.jar!/"/>
               </CLASSES>
@@ -134,7 +134,7 @@ class StorageTest {
 
         ".idea/libraries/scala_sdk.xml" ->
           <component name="libraryTable">
-            <library name="scala-sdk" type="Scala">
+            <library name="prefix: scala-sdk" type="Scala">
               <properties>
                 <option name="languageLevel" value="2.11"/>
                 <compiler-classpath>
@@ -157,7 +157,7 @@ class StorageTest {
   }
 
   private def assertSerialized(project: Project, expected: Map[Path, Elem]): Unit = {
-    val actual = Storage.toXml(project, "home")
+    val actual = Storage.toXml(project, "prefix: ", "home")
 
     if (expected.map(p => (p._1, trim(p._2))) != actual) {
       val printer = new PrettyPrinter(180, 2)
