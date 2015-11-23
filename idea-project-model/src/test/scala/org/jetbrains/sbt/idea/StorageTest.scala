@@ -40,7 +40,10 @@ class StorageTest {
             moduleDependencies = Seq(
               ModuleDependency("id")),
             libraryDependencies = Seq(
-              LibraryDependency("junit")))),
+              LibraryDependency("junit")),
+            sbtData = Some(SbtData(
+              imports = Seq("sbt._","Keys._"),
+              resolvers = Seq(Resolver("public", "maven", "https://repo1.maven.org/maven2/")))))),
         libraries = Seq(
           Library("junit",
             classes = Seq("home/junit.jar"),
@@ -84,7 +87,7 @@ class StorageTest {
           </module>,
 
         ".idea/modules/id-build.iml" ->
-          <module type="SBT_MODULE" version="4">
+          <module type="SBT_MODULE" version="4" sbt.imports="sbt._, Keys._" sbt.resolvers="https://repo1.maven.org/maven2/|maven|public">
             <component name="NewModuleRootManager" inherit-compiler-output="false">
               <output url="file://$MODULE_DIR$/../../project/target/idea-classes"/>
               <output-test url="file://$MODULE_DIR$/../../project/target/idea-test-classes"/>
@@ -157,7 +160,7 @@ class StorageTest {
     val actual = Storage.toXml(project, "home")
 
     if (expected.map(p => (p._1, trim(p._2))) != actual) {
-      val printer = new PrettyPrinter(120, 2)
+      val printer = new PrettyPrinter(180, 2)
 
       def format(pairs: Map[Path, Elem]): String =
         pairs.toSeq.sortBy(_._1).map(p => p._1 + ":\n" + printer.format(p._2)).mkString("\n\n")

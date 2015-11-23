@@ -158,11 +158,12 @@ object Serializer {
     )
 
   private def toXml(resolver: Resolver): Elem =
-    <resolver name={resolver.name} root={resolver.root}/>
+    <resolver name={resolver.name} kind={resolver.kind} root={resolver.root}/>
 
   private def resolverFrom(node: Node): Resolver =
     Resolver(
       name = (node \ "@name").text,
+      kind = (node \ "@kind").text,
       root = (node \ "@root").text)
 
   private def format(b: Boolean): String = b.toString

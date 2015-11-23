@@ -219,7 +219,7 @@ object Converter {
 
   def createSbtModuleData(project: sbtStructure.ProjectData, localCachePath: Option[String]): SbtData = {
     val imports = project.build.imports.flatMap(_.trim.substring(7).split(", "))
-    val resolvers = project.resolvers.map(r => Resolver(r.name, r.root)).toSeq
+    val resolvers = project.resolvers.map(r => Resolver(r.name, "maven", r.root)).toSeq
     new SbtData(imports, resolvers)
   }
 

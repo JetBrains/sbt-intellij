@@ -39,7 +39,9 @@ object Storage {
   }
 
   private def toXml(module: Module, fs: FileSystem): Elem =
-      <module type={format(module.kind)} version="4">
+      <module type={format(module.kind)} version="4"
+              sbt.imports={module.sbtData.map(_.imports.mkString(", ")).map(Text(_))}
+              sbt.resolvers={module.sbtData.map(_.resolvers.map(format).mkString(", ")).map(Text(_))}>
         <component name="NewModuleRootManager" inherit-compiler-output={format(module.outputPaths.isEmpty)} >
           {module.outputPaths.toSeq.flatMap { paths =>
             <output url={fs.fileUrlFrom(paths.production)}/>
@@ -74,6 +76,8 @@ object Storage {
           }}
         </component>
       </module>
+
+  private def format(resolver: Resolver): String = s"${resolver.root}|${resolver.kind}|${resolver.name}"
 
   private def toXml(root: ContentRoot, fs: FileSystem): Elem =
     <content url={fs.fileUrlFrom(root.base)}>

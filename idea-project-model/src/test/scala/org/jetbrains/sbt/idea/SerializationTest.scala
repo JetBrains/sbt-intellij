@@ -48,7 +48,7 @@ class SerializationTest {
                 scope = Scope.Test)),
             sbtData = Some(SbtData(
               imports = Seq("org.foo.bar"),
-              resolvers = Seq(Resolver("name", "root")))))),
+              resolvers = Seq(Resolver("name", "kind", "root")))))),
         libraries = Seq(
           Library("junit",
             classes = Seq("junit.jar"),
@@ -73,7 +73,7 @@ class SerializationTest {
     val loadedProject = Serializer.fromXml(xml)
 
     if (project != loadedProject) {
-      val printer = new PrettyPrinter(120, 2)
+      val printer = new PrettyPrinter(180, 2)
       val expected = printer.format(xml)
       val actual = printer.format(Serializer.toXml(loadedProject))
       Assert.assertEquals(expected, actual)
