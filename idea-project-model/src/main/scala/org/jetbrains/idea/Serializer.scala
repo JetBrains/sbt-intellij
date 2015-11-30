@@ -12,7 +12,6 @@ object Serializer {
     <project name={project.name} base={project.base}>
       {project.modules.map(toXml)}
       {project.libraries.map(toXml)}
-      {project.scalaSdks.map(toXml)}
     </project>
 
   def fromXml(node: Node): Project =
@@ -20,8 +19,7 @@ object Serializer {
       name = (node \ "@name").text,
       base =(node \ "@base").text,
       modules = (node \ "module").map(moduleFrom),
-      libraries = (node \ "library").map(libraryFrom),
-      scalaSdks =  (node \ "scalaSdk").map(scalaSdkFrom))
+      libraries = (node \ "library").map(libraryFrom))
 
   private def toXml(module: Module): Elem =
     <module name={module.name} kind={optional(module.kind, ModuleKind.Java)(format)}>
@@ -80,7 +78,13 @@ object Serializer {
       {library.classes.map(it => <classes>{it}</classes>)}
       {library.sources.map(it => <sources>{it}</sources>)}
       {library.docs.map(it => <docs>{it}</docs>)}
+      {library.scalaCompiler.fold(NodeSeq.Empty)(toXml)}
     </library>
+
+  private def toXml(compiler: ScalaCompiler): Elem =
+    <scalaCompiler level={compiler.level}>
+      {compiler.classpath.map(it => <classpath>{it}</classpath>)}
+    </scalaCompiler>
 
   private def libraryFrom(node: Node): Library =
     Library(
@@ -88,7 +92,14 @@ object Serializer {
       resolved = default((node \ "@resolved").text, parseBoolean, true),
       classes = (node \ "classes").map(_.text),
       sources = (node \ "sources").map(_.text),
-      docs = (node \ "docs").map(_.text)
+      docs = (node \ "docs").map(_.text),
+      scalaCompiler = (node \ "scalaCompiler").map(scalaCompilerFrom).headOption
+    )
+
+  private def scalaCompilerFrom(node: Node): ScalaCompiler =
+    ScalaCompiler(
+      level = (node \ "@level").text,
+      classpath = (node \ "classpath").map(_.text)
     )
 
   private def toXml(dependency: ModuleDependency): Elem =
@@ -125,24 +136,6 @@ object Serializer {
       classes = (node \ "classes").map(_.text),
       sources = (node \ "sources").map(_.text),
       docs = (node \ "docs").map(_.text)
-    )
-
-  private def toXml(sdk: ScalaSdk): Elem =
-    <scalaSdk name={sdk.name} level={sdk.languageLevel}>
-      {sdk.classes.map(it => <classes>{it}</classes>)}
-      {sdk.sources.map(it => <sources>{it}</sources>)}
-      {sdk.docs.map(it => <docs>{it}</docs>)}
-      {sdk.compilerClasspath.map(it => <classpath>{it}</classpath>)}
-    </scalaSdk>
-
-  private def scalaSdkFrom(node: Node): ScalaSdk =
-    ScalaSdk(
-      name = (node \ "@name").text,
-      languageLevel = (node \ "@level").text,
-      classes = (node \ "classes").map(_.text),
-      sources = (node \ "sources").map(_.text),
-      docs = (node \ "docs").map(_.text),
-      compilerClasspath = (node \ "classpath").map(_.text)
     )
 
   private def toXml(data: SbtData): Elem =

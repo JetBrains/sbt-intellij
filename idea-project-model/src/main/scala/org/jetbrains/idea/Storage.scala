@@ -4,7 +4,7 @@ import java.io.File
 
 import org.jetbrains.idea.model._
 
-import scala.xml.{Elem, Text, Utility}
+import scala.xml.{NodeSeq, Elem, Text, Utility}
 
 /**
  * @author Pavel Fatin
@@ -34,8 +34,7 @@ object Storage {
     val index = (".idea/modules.xml", trim(toXml(project.modules.map(_.name), moduleDirectory, projectFs)))
     val modules = project.modules.map(module => (".idea/modules" / s"${module.name}.iml", trim(toXml(module, prefix, moduleFs))))
     val libraries = project.libraries.map(library => (".idea/libraries" / s"${escape(library.name)}.xml", trim(toXml(library, prefix, moduleFs))))
-    val scalaSdks = project.scalaSdks.map(sdk => (".idea/libraries" / s"${escape(sdk.name)}.xml", trim(toXml(sdk, prefix, moduleFs))))
-    Map(index +: (modules ++ libraries ++ scalaSdks): _*)
+    Map(index +: (modules ++ libraries): _*)
   }
 
   private def toXml(module: Module, prefix: String, fs: FileSystem): Elem =
@@ -102,7 +101,15 @@ object Storage {
 
   private def toXml(library: Library, prefix: String, fs: FileSystem): Elem =
     <component name="libraryTable">
-      <library name={prefix + library.name}>
+      <library name={prefix + library.name} type={optional(library.scalaCompiler.isDefined)("Scala")}>
+        {library.scalaCompiler.fold(NodeSeq.Empty) { compiler =>
+          <properties>
+            <option name="languageLevel" value={compiler.level} />
+            <compiler-classpath>
+              {compiler.classpath.map(path => <root url={fs.fileUrlFrom(path)}/>)}
+            </compiler-classpath>
+          </properties>
+        }}
         <CLASSES>
           {library.classes.map(path => <root url={fs.urlFrom(path)}/>)}
         </CLASSES>
@@ -111,27 +118,6 @@ object Storage {
         </JAVADOC>
         <SOURCES>
           {library.sources.map(path => <root url={fs.urlFrom(path)}/>)}
-        </SOURCES>
-      </library>
-    </component>
-
-  private def toXml(sdk: ScalaSdk, prefix: String, fs: FileSystem): Elem =
-    <component name="libraryTable">
-      <library name={prefix + sdk.name} type="Scala">
-        <properties>
-          <option name="languageLevel" value={sdk.languageLevel} />
-          <compiler-classpath>
-            {sdk.compilerClasspath.map(path => <root url={fs.fileUrlFrom(path)}/>)}
-          </compiler-classpath>
-        </properties>
-        <CLASSES>
-          {sdk.classes.map(path => <root url={fs.urlFrom(path)}/>)}
-        </CLASSES>
-        <JAVADOC>
-          {sdk.docs.map(path => <root url={fs.urlFrom(path)}/>)}
-        </JAVADOC>
-        <SOURCES>
-          {sdk.sources.map(path => <root url={fs.urlFrom(path)}/>)}
         </SOURCES>
       </library>
     </component>

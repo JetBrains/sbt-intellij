@@ -48,14 +48,14 @@ class StorageTest {
           Library("junit",
             classes = Seq("home/junit.jar"),
             sources = Seq("home/junit-sources.jar"),
-            docs = Seq("home/junit-javadoc.jar"))
-        ),
-        scalaSdks = Seq(
-          ScalaSdk("scala-sdk", "2.11",
+            docs = Seq("home/junit-javadoc.jar")),
+          Library("scala-sdk",
             classes = Seq("home/scala-library.jar"),
             sources = Seq("home/scala-library-sources.jar"),
             docs = Seq("home/scala-library-javadoc.jar"),
-            compilerClasspath = Seq("home/scala-compiler.jar", "home/scala-library.jar"))
+            scalaCompiler = Some(ScalaCompiler(
+              level = "2.11",
+              classpath = Seq("home/scala-compiler.jar", "home/scala-library.jar"))))
         )
       )
 

@@ -53,14 +53,14 @@ class SerializationTest {
           Library("junit",
             classes = Seq("junit.jar"),
             sources = Seq("junit-src.jar"),
-            docs = Seq("junit-doc.jar"))
-        ),
-        scalaSdks = Seq(
-          ScalaSdk("scala-sdk", "2.11",
+            docs = Seq("junit-doc.jar")),
+          Library("scala-sdk",
             classes = Seq("scala-library.jar"),
             sources = Seq("scala-library-src.jar"),
             docs = Seq("scala-library-doc.jar"),
-            compilerClasspath = Seq("scala-compiler.jar", "scala-library.jar"))
+            scalaCompiler = Some(ScalaCompiler(
+              level = "2.11",
+              classpath = Seq("scala-compiler.jar", "scala-library.jar"))))
         )
       )
 

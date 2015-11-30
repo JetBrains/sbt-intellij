@@ -6,5 +6,4 @@ package org.jetbrains.idea.model
 case class Project(name: String,
                    base: Path,
                    modules: Seq[Module] = Seq.empty,
-                   libraries: Seq[Library] = Seq.empty,
-                   scalaSdks: Seq[ScalaSdk] = Seq.empty)
+                   libraries: Seq[Library] = Seq.empty)

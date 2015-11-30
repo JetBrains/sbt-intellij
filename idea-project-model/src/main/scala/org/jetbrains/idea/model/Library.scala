@@ -7,4 +7,5 @@ case class Library(name: String,
                    classes: Seq[Path] = Seq.empty,
                    sources: Seq[Path] = Seq.empty,
                    docs: Seq[Path] = Seq.empty,
-                   resolved: Boolean = true)
+                   resolved: Boolean = true,
+                   scalaCompiler: Option[ScalaCompiler] = None)
