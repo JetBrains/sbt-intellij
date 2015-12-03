@@ -63,8 +63,8 @@ object Converter {
     Project(
       name = project.name,
       base = root,
-      modules = modules ++ buildModules,
-      libraries = librariesAndSdks)
+      modules = (modules ++ buildModules).sortBy(_.name),
+      libraries = librariesAndSdks.sortBy(_.name))
   }
 
   def createModules(projects: Seq[sbtStructure.ProjectData], libraries: Seq[Library]): Seq[Module] = {
@@ -88,9 +88,9 @@ object Converter {
         kind = ModuleKind.Java,
         outputPaths = outputPaths,
         contentRoots = Seq(createContentRoot(project)),
-        libraryDependencies = libraryDependencies,
-        moduleDependencies = moduleDependencies,
-        libraries = createUnmanagedDependencies(project.dependencies.jars)
+        libraryDependencies = libraryDependencies.sortBy(_.name),
+        moduleDependencies = moduleDependencies.sortBy(_.name),
+        libraries = createUnmanagedDependencies(project.dependencies.jars).sortBy(_.name)
       )
     }
   }
@@ -124,18 +124,18 @@ object Converter {
 //    new ModuleExtNode(scalaVersion, scalacClasspath, scalacOptions, jdk, javacOptions)
 //  }
 
-  private def createAndroidFacet(project: sbtStructure.ProjectData, android: sbtStructure.AndroidData): AndroidFacet = {
-    new AndroidFacet(
-      targetVersion = android.targetVersion,
-      manifest = android.manifestPath,
-      apk = android.apkPath,
-      resources = android.resPath,
-      assets = android.assetsPath,
-      generator = android.genPath,
-      libraries = android.libsPath,
-      isLibrary = android.isLibrary,
-      proguardConfig = android.proguardConfig)
-  }
+//  private def createAndroidFacet(project: sbtStructure.ProjectData, android: sbtStructure.AndroidData): AndroidFacet = {
+//    new AndroidFacet(
+//      targetVersion = android.targetVersion,
+//      manifest = android.manifestPath,
+//      apk = android.apkPath,
+//      resources = android.resPath,
+//      assets = android.assetsPath,
+//      generator = android.genPath,
+//      libraries = android.libsPath,
+//      isLibrary = android.isLibrary,
+//      proguardConfig = android.proguardConfig)
+//  }
 
   private def createUnresolvedLibrary(moduleId: sbtStructure.ModuleIdentifier): Library = {
     val module = sbtStructure.ModuleData(moduleId, Set.empty, Set.empty, Set.empty)
@@ -149,9 +149,9 @@ object Converter {
   private def createLibrary(module: sbtStructure.ModuleData, resolved: Boolean): Library = {
     Library(
       name = nameFor(module.id),
-      classes = module.binaries.map(_.path).toSeq,
-      sources = module.sources.map(_.path).toSeq,
-      docs = module.sources.map(_.path).toSeq,
+      classes = module.binaries.map(_.path).toSeq.sorted,
+      sources = module.sources.map(_.path).toSeq.sorted,
+      docs = module.sources.map(_.path).toSeq.sorted,
       resolved = resolved)
   }
 
@@ -168,7 +168,13 @@ object Converter {
 
     val excludedDirectories = getExcludedTargetDirs(project).map(_.path)
 
-    ContentRoot(project.base.path, productionSources, productionResources, testSources, testResources, excludedDirectories)
+    ContentRoot(
+      base = project.base.path,
+      sources = productionSources.sorted,
+      resources = productionResources.sorted,
+      testSources = testSources.sorted,
+      testResources = testResources.sorted,
+      excluded = excludedDirectories.sorted)
   }
 
   // We cannot always exclude the whole ./target/ directory because of
@@ -212,7 +218,13 @@ object Converter {
       val classes = build.classes.filter(_.exists).map(_.path)
       val docs = build.docs.filter(_.exists).map(_.path)
       val sources = build.sources.filter(_.exists).map(_.path)
-      createModuleLevelLibrary(Sbt.BuildLibraryName, classes, docs, sources, Scope.Compile)
+
+      createModuleLevelLibrary(
+        name = Sbt.BuildLibraryName,
+        classes = classes.sorted,
+        docs = docs.sorted,
+        sources = sources.sorted,
+        scope = Scope.Compile)
     }
 
     val sbtData = createSbtModuleData(project, localCachePath)
@@ -227,7 +239,10 @@ object Converter {
       buildRoot / Sbt.TargetDirectory,
       buildRoot / Sbt.ProjectDirectory / Sbt.TargetDirectory)
 
-    ContentRoot(base = buildRoot, sources = sourceDirs, excluded = excludedDirs)
+    ContentRoot(
+      base = buildRoot,
+      sources = sourceDirs,
+      excluded = excludedDirs)
   }
 
   def createSbtModuleData(project: sbtStructure.ProjectData, localCachePath: Option[String]): SbtData = {

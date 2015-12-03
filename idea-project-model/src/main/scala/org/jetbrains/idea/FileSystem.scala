@@ -14,13 +14,13 @@ class FileSystem private (aliases: List[(String, Path)]) {
     if (path.endsWith(".jar")) jarUrlFrom(path) else fileUrlFrom(path)
 
   def fileUrlFrom(path: Path): String =
-    "file://" + pathFrom(canonical(path))
+    "file://" + pathFrom(path)
 
   def jarUrlFrom(path: Path): String =
-    "jar://" + pathFrom(canonical(path)) + "!/"
+    "jar://" + pathFrom(path) + "!/"
 
   def pathFrom(path: Path): Path = {
-    aliases.foldLeft(path) { case (result, (alias, prefix)) =>
+    aliases.foldLeft(canonical(path)) { case (result, (alias, prefix)) =>
       if (result.startsWith(prefix)) alias + result.substring(prefix.length) else result
     }
   }
