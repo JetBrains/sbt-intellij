@@ -42,6 +42,19 @@ object Converter {
 
     val modules = createModules(projects, libraries)
 
+    val scalaVersionToClasspath = projects.flatMap(_.scala.map(scala =>
+      (scala.version, scala.libraryJar +: scala.compilerJar +: scala.extraJars)))
+
+    val librariesAndSdks = libraries.map { library =>
+      scalaVersionToClasspath.find {
+        case (version, _) => library.name.contains(version)
+      }.map {
+        case (version, classpath) => library.copy(scalaCompiler = Some(ScalaCompiler(version, classpath.map(_.getPath))))
+      } getOrElse {
+        library
+      }
+    }
+
 //    val projectToModuleNode: Map[sbtStructure.ProjectData, ModuleNode] = projects.zip(moduleNodes).toMap
 //    val sharedSourceModules = createSharedSourceModules(projectToModuleNode, libraryNodes, moduleFilesDirectory)
 
@@ -51,7 +64,7 @@ object Converter {
       name = project.name,
       base = root,
       modules = modules ++ buildModules,
-      libraries = libraries)
+      libraries = librariesAndSdks)
   }
 
   def createModules(projects: Seq[sbtStructure.ProjectData], libraries: Seq[Library]): Seq[Module] = {
