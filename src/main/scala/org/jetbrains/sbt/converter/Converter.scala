@@ -151,7 +151,7 @@ object Converter {
       name = nameFor(module.id),
       classes = module.binaries.map(_.path).toSeq.sorted,
       sources = module.sources.map(_.path).toSeq.sorted,
-      docs = module.sources.map(_.path).toSeq.sorted,
+      docs = module.docs.map(_.path).toSeq.sorted,
       resolved = resolved)
   }
 
