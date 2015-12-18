@@ -61,8 +61,15 @@ class SerializationTest {
             scalaCompiler = Some(ScalaCompiler(
               level = "2.11",
               classpath = Seq("scala-compiler.jar", "scala-library.jar"))))
+        ),
+        profiles = Seq(
+          Profile("Profile 1",
+            ScalaCompilerSettings(
+              dynamics = true,
+              additionalCompilerOptions = Seq("-target:jvm-1.6"),
+              plugins = Seq("continuations.jar")),
+            Seq("id")))
         )
-      )
 
     assertSerializedAndDeserizlizedCorrectly(project)
   }

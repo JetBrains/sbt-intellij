@@ -55,8 +55,14 @@ class StorageTest {
             docs = Seq("home/scala-library-javadoc.jar"),
             scalaCompiler = Some(ScalaCompiler(
               level = "2.11",
-              classpath = Seq("home/scala-compiler.jar", "home/scala-library.jar"))))
-        )
+              classpath = Seq("home/scala-compiler.jar", "home/scala-library.jar"))))),
+        profiles = Seq(
+          Profile("Profile 1",
+            ScalaCompilerSettings(
+              dynamics = true,
+              additionalCompilerOptions = Seq("-target:jvm-1.6"),
+              plugins = Seq("continuations.jar")),
+            Seq("id")))
       )
 
     assertSerialized(project,
@@ -152,7 +158,22 @@ class StorageTest {
                 <root url="jar://$USER_HOME$/scala-library-sources.jar!/"/>
               </SOURCES>
             </library>
-          </component>
+          </component>,
+
+        ".idea/scala_compiler.xml" ->
+          <project version="4">
+            <component name="ScalaCompilerConfiguration">
+              <profile name="Profile 1" modules="id">
+                <option name="dynamics" value="true" />
+                <parameters>
+                  <parameter value="-target:jvm-1.6" />
+                </parameters>
+                <plugins>
+                  <plugin path="continuations.jar" />
+                </plugins>
+              </profile>
+            </component>
+          </project>
       ))
   }
 

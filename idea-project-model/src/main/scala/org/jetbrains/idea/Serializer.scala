@@ -12,6 +12,7 @@ object Serializer {
     <project name={project.name} base={project.base}>
       {project.modules.map(toXml)}
       {project.libraries.map(toXml)}
+      {project.profiles.map(toXml)}
     </project>
 
   def fromXml(node: Node): Project =
@@ -19,7 +20,8 @@ object Serializer {
       name = (node \ "@name").text,
       base =(node \ "@base").text,
       modules = (node \ "module").map(moduleFrom),
-      libraries = (node \ "library").map(libraryFrom))
+      libraries = (node \ "library").map(libraryFrom),
+      profiles = (node \ "profile").map(profileFrom))
 
   private def toXml(module: Module): Elem =
     <module name={module.name} kind={optional(module.kind, ModuleKind.Java)(format)}>
@@ -159,6 +161,70 @@ object Serializer {
       kind = (node \ "@kind").text,
       root = (node \ "@root").text)
 
+  private def toXml(profile: Profile): Elem =
+    <profile name={profile.name} modules={profile.modules.mkString(",")}>
+      {toXml(profile.settings).child}
+    </profile>
+
+  private def profileFrom(node: Node): Profile =
+    Profile(
+      name = (node \ "@name").text,
+      settings = scalaCompilerSettingsFrom(node),
+      modules = (node \ "@modules").text.split(",").toSeq
+    )
+
+  private def toXml(settings: ScalaCompilerSettings): Node =
+    <profile>
+      {if (settings.compileOrder != CompileOrder.Mixed)
+        <compileOrder>{format(settings.compileOrder)}</compileOrder>
+      }
+      {if (settings.dynamics) <dynamics>true</dynamics>}
+      {if (settings.postfixOps) <postfixOps>true</postfixOps>}
+      {if (settings.reflectiveCalls) <reflectiveCalls>true</reflectiveCalls>}
+      {if (settings.implicitConversions) <implicitConversions>true</implicitConversions>}
+      {if (settings.higherKinds) <higherKinds>true</higherKinds>}
+      {if (settings.existentials) <existentials>true</existentials>}
+      {if (settings.macros) <macros>true</macros>}
+      {if (settings.experimental) <experimental>true</experimental>}
+      {if (!settings.warnings) <warnings>false</warnings>}
+      {if (settings.deprecationWarnings) <deprecationWarnings>true</deprecationWarnings>}
+      {if (settings.uncheckedWarnings) <uncheckedWarnings>true</uncheckedWarnings>}
+      {if (settings.featureWarnings) <featureWarnings>true</featureWarnings>}
+      {if (settings.optimiseBytecode) <optimiseBytecode>true</optimiseBytecode>}
+      {if (settings.explainTypeErrors) <explainTypeErrors>true</explainTypeErrors>}
+      {if (!settings.specialization) <specialization>false</specialization>}
+      {if (settings.continuations) <continuations>true</continuations>}
+      {if (settings.debuggingInfoLevel != DebuggingInfoLevel.Vars)
+        <debuggingInfoLevel>{format(settings.debuggingInfoLevel)}</debuggingInfoLevel>
+      }
+      {settings.additionalCompilerOptions.map(it => <option>{it}</option>)}
+      {settings.plugins.map(it => <plugin>{it}</plugin>)}
+    </profile>
+
+  private def scalaCompilerSettingsFrom(node: Node): ScalaCompilerSettings =
+    ScalaCompilerSettings(
+      compileOrder = default((node \ "compileOrder").text, parseCompileOrder, CompileOrder.Mixed),
+      dynamics = default((node \ "dynamics").text, parseBoolean, false),
+      postfixOps = default((node \ "postfixOps").text, parseBoolean, false),
+      reflectiveCalls = default((node \ "reflectiveCalls").text, parseBoolean, false),
+      implicitConversions = default((node \ "implicitConversions").text, parseBoolean, false),
+      higherKinds = default((node \ "higherKinds").text, parseBoolean, false),
+      existentials = default((node \ "existentials").text, parseBoolean, false),
+      macros = default((node \ "macros").text, parseBoolean, false),
+      experimental = default((node \ "experimental").text, parseBoolean, false),
+      warnings = default((node \ "warnings").text, parseBoolean, true),
+      deprecationWarnings = default((node \ "deprecationWarnings").text, parseBoolean, false),
+      uncheckedWarnings = default((node \ "uncheckedWarnings").text, parseBoolean, false),
+      featureWarnings = default((node \ "featureWarnings").text, parseBoolean, false),
+      optimiseBytecode = default((node \ "optimiseBytecode").text, parseBoolean, false),
+      explainTypeErrors = default((node \ "explainTypeErrors").text, parseBoolean, false),
+      specialization = default((node \ "specialization").text, parseBoolean, true),
+      continuations = default((node \ "continuations").text, parseBoolean, false),
+      debuggingInfoLevel = default((node \ "debuggingInfoLevel").text, parseDebuggingInfoLevel, DebuggingInfoLevel.Vars),
+      additionalCompilerOptions = (node \ "option").map(_.text),
+      plugins = (node \ "plugin").map(_.text)
+    )
+
   private def format(b: Boolean): String = b.toString
 
   private def parseBoolean(s: String): Boolean = s.toBoolean
@@ -199,6 +265,34 @@ object Serializer {
     case "java" => ModuleKind.Java
     case "sbt" => ModuleKind.Sbt
     case "source" => ModuleKind.Source
+  }
+
+  private def format(kind: CompileOrder): String = kind match {
+    case CompileOrder.Mixed => "mixed"
+    case CompileOrder.JavaThenScala => "javaThenScala"
+    case CompileOrder.ScalaThenJava => "scalaThenJava"
+  }
+
+  private def parseCompileOrder(s: String): CompileOrder = s match {
+    case "mixed" => CompileOrder.Mixed
+    case "javaThenScala" => CompileOrder.JavaThenScala
+    case "scalaThenJava" => CompileOrder.ScalaThenJava
+  }
+
+  private def format(kind: DebuggingInfoLevel): String = kind match {
+    case DebuggingInfoLevel.None => "none"
+    case DebuggingInfoLevel.Source => "source"
+    case DebuggingInfoLevel.Line => "line"
+    case DebuggingInfoLevel.Vars => "vars"
+    case DebuggingInfoLevel.Notailcalls => "notailcalls"
+  }
+
+  private def parseDebuggingInfoLevel(s: String): DebuggingInfoLevel = s match {
+    case "none" => DebuggingInfoLevel.None
+    case "source" => DebuggingInfoLevel.Source
+    case "line" => DebuggingInfoLevel.Line
+    case "vars" => DebuggingInfoLevel.Vars
+    case "notailcalls" => DebuggingInfoLevel.Notailcalls
   }
 
   private def optional[T](v: T, z: T)(f: T => String): Option[Text] =

@@ -34,7 +34,8 @@ object Storage {
     val index = (".idea/modules.xml", trim(toXml(project.modules.map(_.name), moduleDirectory, projectFs)))
     val modules = project.modules.map(module => (".idea/modules" / s"${module.name}.iml", trim(toXml(module, prefix, moduleFs))))
     val libraries = project.libraries.map(library => (".idea/libraries" / s"${escape(library.name)}.xml", trim(toXml(library, prefix, moduleFs))))
-    Map(index +: (modules ++ libraries): _*)
+    val profiles = (".idea/scala_compiler.xml", trim(toXml(project.profiles)))
+    Map(index +: (modules ++ libraries) :+ profiles: _*)
   }
 
   private def toXml(module: Module, prefix: String, fs: FileSystem): Elem =
@@ -122,6 +123,45 @@ object Storage {
       </library>
     </component>
 
+  private def toXml(profiles: Seq[Profile]): Elem =
+    <project version="4">
+      <component name="ScalaCompilerConfiguration">
+        {profiles.map { profile =>
+          val settings = profile.settings
+          <profile name={profile.name} modules={profile.modules.mkString(",")}>
+            {if (settings.compileOrder != CompileOrder.Mixed)
+              <option name="compileOrder" value={format(settings.compileOrder)} />
+            }
+            {if (settings.dynamics) <option name="dynamics" value="true" /> }
+            {if (settings.postfixOps) <option name="postfixOps" value="true" /> }
+            {if (settings.reflectiveCalls) <option name="reflectiveCalls" value="true" /> }
+            {if (settings.implicitConversions) <option name="implicitConversions" value="true" /> }
+            {if (settings.higherKinds) <option name="higherKinds" value="true" /> }
+            {if (settings.existentials) <option name="existentials" value="true" /> }
+            {if (settings.macros) <option name="macros" value="true" /> }
+            {if (settings.experimental) <option name="experimental" value="true" /> }
+            {if (!settings.warnings) <option name="warnings" value="false" /> }
+            {if (settings.deprecationWarnings) <option name="deprecationWarnings" value="true" /> }
+            {if (settings.uncheckedWarnings) <option name="uncheckedWarnings" value="true" /> }
+            {if (settings.featureWarnings) <option name="featureWarnings" value="true" /> }
+            {if (settings.optimiseBytecode) <option name="optimiseBytecode" value="true" /> }
+            {if (settings.explainTypeErrors) <option name="explainTypeErrors" value="true" /> }
+            {if (!settings.specialization) <option name="specialization" value="false" /> }
+            {if (settings.continuations) <option name="continuations" value="true" /> }
+            {if (settings.debuggingInfoLevel != DebuggingInfoLevel.Vars)
+              <option name="debuggingInfoLevel" value={format(settings.debuggingInfoLevel)} />
+            }
+            <parameters>
+              {settings.additionalCompilerOptions.map(it => <parameter value={it} />)}
+            </parameters>
+            <plugins>
+              {settings.plugins.map(it => <plugin path={it} />)}
+            </plugins>
+          </profile>
+        }}
+      </component>
+    </project>
+
   private def format(b: Boolean): String = b.toString
 
   private def format(kind: ModuleKind): String = kind match {
@@ -134,6 +174,20 @@ object Storage {
     case LibraryLevel.Application => "application"
     case LibraryLevel.Project => "project"
     case LibraryLevel.Module => "module"
+  }
+
+  private def format(order: CompileOrder): String = order match {
+    case CompileOrder.Mixed => "Mixed"
+    case CompileOrder.JavaThenScala => "JavaThenScala"
+    case CompileOrder.ScalaThenJava => "ScalaThenJava"
+  }
+
+  private def format(level: DebuggingInfoLevel): String = level match {
+    case DebuggingInfoLevel.None => "None"
+    case DebuggingInfoLevel.Source => "Source"
+    case DebuggingInfoLevel.Line => "Line"
+    case DebuggingInfoLevel.Vars => "Vars"
+    case DebuggingInfoLevel.Notailcalls => "Notailcalls"
   }
 
   private def optional(b: Boolean)(s: String): Option[Text] = if (b) Some(Text(s)) else None
