@@ -60,8 +60,7 @@ object ScalaCompilerSettings {
 
   private val PluginOptionPattern = "-Xplugin:(.+)".r
 
-  def apply(s: String): ScalaCompilerSettings = {
-    val options = s.split("\\S+").toSeq
+  def apply(options: Seq[String]): ScalaCompilerSettings = {
     apply(normalized(options).toSet)
   }
 

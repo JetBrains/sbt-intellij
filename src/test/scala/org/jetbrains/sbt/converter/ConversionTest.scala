@@ -26,7 +26,7 @@ class ConversionTest {
                 file("scala-library-2.11.7.jar"),
                 file("scala-compiler-2.11.7.jar"),
                 Seq(file("scala-reflect-2.11.7.jar")),
-                Seq.empty)),
+                Seq("-optimise"))),
             dependencies = DependencyData(
               modules = Seq(
                 ModuleDependencyData(
@@ -76,7 +76,10 @@ class ConversionTest {
                 Seq("scala-library-2.11.7.jar",
                   "scala-compiler-2.11.7.jar",
                   "scala-reflect-2.11.7.jar")))),
-          Library("org.scala-lang:scala-xml:2.11.0:jar", resolved = false)))
+          Library("org.scala-lang:scala-xml:2.11.0:jar", resolved = false)),
+        profiles = Seq(
+          Profile("SBT 1", ScalaCompilerSettings(optimiseBytecode = true), Seq("id"))
+        ))
 
     assertConvertedTo(sbtStructure, ideaProject)
   }

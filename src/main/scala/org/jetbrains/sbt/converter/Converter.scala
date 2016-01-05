@@ -60,11 +60,20 @@ object Converter {
 
     val buildModules = projects.map(createBuildModule(_, data.localCachePath))
 
+    val profiles = projects
+      .map(project => (ScalaCompilerSettings(project.scala.map(_.options).getOrElse(Seq.empty)), project.id))
+      .groupBy(_._1)
+      .mapValues(_.map(_._2))
+      .zipWithIndex
+      .map{case ((settings, moduleIds), i) => Profile(s"SBT ${i + 1}", settings, moduleIds.toSeq)}
+      .toSeq
+
     Project(
       name = project.name,
       base = root,
       modules = (modules ++ buildModules).sortBy(_.name),
-      libraries = librariesAndSdks.sortBy(_.name))
+      libraries = librariesAndSdks.sortBy(_.name),
+      profiles = profiles)
   }
 
   def createModules(projects: Seq[sbtStructure.ProjectData], libraries: Seq[Library]): Seq[Module] = {
