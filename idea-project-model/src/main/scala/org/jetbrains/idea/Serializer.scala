@@ -9,7 +9,7 @@ import scala.xml.{NodeSeq, Node, Elem, Text}
   */
 object Serializer {
   def toXml(project: Project): Elem =
-    <project name={project.name} base={project.base}>
+    <project name={project.name} base={project.base} jdk={text(project.jdk)} languageLevel={text(project.languageLevel)}>
       {project.modules.map(toXml)}
       {project.libraries.map(toXml)}
       {project.profiles.map(toXml)}
@@ -19,12 +19,14 @@ object Serializer {
     Project(
       name = (node \ "@name").text,
       base =(node \ "@base").text,
+      jdk = (node \ "@jdk").headOption.map(_.text),
+      languageLevel = (node \ "@languageLevel").headOption.map(_.text),
       modules = (node \ "module").map(moduleFrom),
       libraries = (node \ "library").map(libraryFrom),
       profiles = (node \ "profile").map(profileFrom))
 
   private def toXml(module: Module): Elem =
-    <module name={module.name} kind={optional(module.kind, ModuleKind.Java)(format)}>
+    <module name={module.name} kind={optional(module.kind, ModuleKind.Java)(format)} jdk={text(module.jdk)} languageLevel={text(module.languageLevel)}>
       {module.outputPaths.fold(NodeSeq.Empty)(toXml)}
       {module.contentRoots.map(toXml)}
       {module.moduleDependencies.map(toXml)}
@@ -37,6 +39,8 @@ object Serializer {
     Module(
       name = (node \ "@name").text,
       kind = default((node \ "@kind").text, parseModuleKind, ModuleKind.Java),
+      jdk = (node \ "@jdk").headOption.map(_.text),
+      languageLevel = (node \ "@languageLevel").headOption.map(_.text),
       outputPaths = (node \ "paths").map(pathsFrom).headOption,
       contentRoots = (node \ "content").map(contentRootFrom),
       libraries = (node \ "library").map(moduleLevelLibraryFrom),
@@ -297,6 +301,9 @@ object Serializer {
 
   private def optional[T](v: T, z: T)(f: T => String): Option[Text] =
     Option(v).filterNot(_ == z).map(it => Text(f(it)))
+
+  private def text(v: Option[Any]): Option[Text] =
+    v.map(it => Text(it.toString))
 
   private def default[T](s: String, f: String => T, z: T): T =
     if (s.isEmpty) z else f(s)

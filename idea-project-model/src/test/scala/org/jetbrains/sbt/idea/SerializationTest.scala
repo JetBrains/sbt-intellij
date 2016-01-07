@@ -21,8 +21,12 @@ class SerializationTest {
   def basic(): Unit = {
     val project =
       Project("name", "base",
+        jdk = Some("1.6"),
+        languageLevel = Some("1.5"),
         modules = Seq(
           Module("id",
+            jdk = Some("1.8"),
+            languageLevel = Some("1.7"),
             contentRoots = Seq(
               ContentRoot("base",
                 excluded = Seq("base/target")))),

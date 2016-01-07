@@ -7,29 +7,29 @@ import org.jetbrains.idea.model.DebuggingInfoLevel.Vars
   * @author Pavel Fatin
   */
 case class ScalaCompilerSettings(
-  val compileOrder: CompileOrder = Mixed,
+  compileOrder: CompileOrder = Mixed,
 
-  val dynamics: Boolean = false,
-  val postfixOps: Boolean = false,
-  val reflectiveCalls: Boolean = false,
-  val implicitConversions: Boolean = false,
-  val higherKinds: Boolean = false,
-  val existentials: Boolean = false,
-  val macros: Boolean = false,
-  val experimental: Boolean = false,
+  dynamics: Boolean = false,
+  postfixOps: Boolean = false,
+  reflectiveCalls: Boolean = false,
+  implicitConversions: Boolean = false,
+  higherKinds: Boolean = false,
+  existentials: Boolean = false,
+  macros: Boolean = false,
+  experimental: Boolean = false,
 
-  val warnings: Boolean = true,
-  val deprecationWarnings: Boolean = false,
-  val uncheckedWarnings: Boolean = false,
-  val featureWarnings: Boolean = false,
-  val optimiseBytecode: Boolean = false,
-  val explainTypeErrors: Boolean = false,
-  val specialization: Boolean = true,
-  val continuations: Boolean = false,
+  warnings: Boolean = true,
+  deprecationWarnings: Boolean = false,
+  uncheckedWarnings: Boolean = false,
+  featureWarnings: Boolean = false,
+  optimiseBytecode: Boolean = false,
+  explainTypeErrors: Boolean = false,
+  specialization: Boolean = true,
+  continuations: Boolean = false,
 
-  val debuggingInfoLevel: DebuggingInfoLevel = Vars,
-  val additionalCompilerOptions: Seq[String] = Seq.empty,
-  val plugins: Seq[String] = Seq.empty) {
+  debuggingInfoLevel: DebuggingInfoLevel = Vars,
+  additionalCompilerOptions: Seq[String] = Seq.empty,
+  plugins: Seq[String] = Seq.empty) {
 }
 
 object ScalaCompilerSettings {

@@ -32,11 +32,19 @@ object Storage {
       .withAlias(project.base, "$MODULE_DIR$/../..")
 
     val index = (".idea/modules.xml", trim(toXml(project.modules.map(_.name), moduleDirectory, projectFs)))
+    val settings = (".idea/misc.xml", trim(toXml(project.jdk, project.languageLevel.map(s => "JDK_" + s.replace('.', '_')))))
     val modules = project.modules.map(module => (".idea/modules" / s"${module.name}.iml", trim(toXml(module, prefix, moduleFs))))
     val libraries = project.libraries.map(library => (".idea/libraries" / s"${escape(library.name)}.xml", trim(toXml(library, prefix, moduleFs))))
     val profiles = (".idea/scala_compiler.xml", trim(toXml(project.profiles)))
-    Map(index +: (modules ++ libraries) :+ profiles: _*)
+    Map(index +: settings +: (modules ++ libraries) :+ profiles: _*)
   }
+
+  private def toXml(jdk: Option[String], languageLevel: Option[String]): Elem =
+    <project version="4">
+      <component name="ProjectRootManager" version="2" languageLevel={text(languageLevel)} default="false" assert-keyword="true" jdk-15="true" project-jdk-name={text(jdk)} project-jdk-type="JavaSDK">
+        <output url="file://$PROJECT_DIR$/classes" />
+      </component>
+    </project>
 
   private def toXml(module: Module, prefix: String, fs: FileSystem): Elem =
       <module type={format(module.kind)} version="4"
@@ -51,7 +59,11 @@ object Storage {
             <exclude-output />
           }}
           {module.contentRoots.map(it => toXml(it, fs))}
-          <orderEntry type="inheritedJdk" />
+          {module.jdk.map { jdk =>
+            <orderEntry type="jdk" jdkName={jdk} jdkType="JavaSDK"/>
+          } getOrElse {
+            <orderEntry type="inheritedJdk"/>
+          }}
           <orderEntry type="sourceFolder" forTests="false" />
           {module.moduleDependencies.map { it =>
             <orderEntry type="module" module-name={it.name} exported={format(it.exported)} />
@@ -194,5 +206,7 @@ object Storage {
 
   private def trim(elem: Elem): Elem = Utility.trim(elem).asInstanceOf[Elem]
 
-  private def escape(name: String) = name.map(c => if (c.isLetterOrDigit) c else '_')
+  private def text(v: Option[Any]): Option[Text] = v.map(it => Text(it.toString))
+
+  private def escape(name: String): String = name.map(c => if (c.isLetterOrDigit) c else '_')
 }

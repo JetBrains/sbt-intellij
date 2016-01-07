@@ -15,8 +15,11 @@ class StorageTest {
   def basic(): Unit = {
     val project =
       Project("name", "base",
+        jdk = Some("1.6"),
+        languageLevel = Some("1.5"),
         modules = Seq(
           Module("id",
+            jdk = Some("1.8"),
             contentRoots = Seq(
               ContentRoot("base",
                 sources = Seq("base/src/main/scala"),
@@ -77,7 +80,14 @@ class StorageTest {
             </component>
           </project>,
 
-        ".idea/modules/id.iml" ->
+    ".idea/misc.xml" ->
+      <project version="4">
+        <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" default="false" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+          <output url="file://$PROJECT_DIR$/classes" />
+        </component>
+      </project>,
+
+    ".idea/modules/id.iml" ->
           <module type="JAVA_MODULE" version="4">
             <component name="NewModuleRootManager" inherit-compiler-output="true">
               <content url="file://$MODULE_DIR$/../..">
@@ -87,7 +97,7 @@ class StorageTest {
                 <sourceFolder url="file://$MODULE_DIR$/../../src/test/resources" type="java-test-resource" />
                 <excludeFolder url="file://$MODULE_DIR$/../../target"/>
               </content>
-              <orderEntry type="inheritedJdk"/>
+              <orderEntry type="jdk" jdkName="1.8" jdkType="JavaSDK" />
               <orderEntry type="sourceFolder" forTests="false"/>
             </component>
           </module>,
