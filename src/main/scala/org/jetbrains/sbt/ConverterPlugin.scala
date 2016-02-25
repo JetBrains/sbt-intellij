@@ -20,7 +20,11 @@ object ConverterPlugin extends Plugin with (State => State) {
     val currentDirectory = System.getProperty("user.dir")
 
     log.info("Reading SBT project structure from " + currentDirectory + "...")
-    val structure = StructureExtractor.apply(state, Options.readFromString(""))
+
+    val options = Options(download = true, resolveClassifiers = false,
+      resolveSbtClassifiers = false, cachedUpdate = false)
+
+    val structure = StructureExtractor.apply(state, options)
 
     log.info("Converting project to IDEA model...")
     val project = Converter.convert(currentDirectory, structure, None)
