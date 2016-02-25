@@ -163,12 +163,16 @@ object Storage {
             {if (settings.debuggingInfoLevel != DebuggingInfoLevel.Vars)
               <option name="debuggingInfoLevel" value={format(settings.debuggingInfoLevel)} />
             }
-            <parameters>
-              {settings.additionalCompilerOptions.map(it => <parameter value={it} />)}
-            </parameters>
-            <plugins>
-              {settings.plugins.map(it => <plugin path={it} />)}
-            </plugins>
+            {if (settings.additionalCompilerOptions.nonEmpty) {
+              <parameters>
+                {settings.additionalCompilerOptions.map(it => <parameter value={it}/>)}
+              </parameters>
+            }}
+            {if (settings.plugins.nonEmpty) {
+              <plugins>
+                {settings.plugins.map(it => <plugin path={it}/>)}
+              </plugins>
+            }}
           </profile>
         }}
       </component>
