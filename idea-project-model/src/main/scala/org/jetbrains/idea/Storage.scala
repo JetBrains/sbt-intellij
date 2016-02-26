@@ -39,7 +39,7 @@ object Storage {
     Map(index +: settings +: (modules ++ libraries) :+ profiles: _*)
   }
 
-  private def toXml(jdk: Option[String], languageLevel: Option[String]): Elem =
+  private def toXml(jdk: Option[String], languageLevel: Option[JavaLanguageLevel]): Elem =
     <project version="4">
       <component name="ProjectRootManager" version="2" languageLevel={text(languageLevel)} default="false" assert-keyword="true" jdk-15="true" project-jdk-name={text(jdk)} project-jdk-type="JavaSDK">
         <output url="file://$PROJECT_DIR$/classes" />
@@ -117,7 +117,7 @@ object Storage {
       <library name={prefix + library.name} type={optional(library.scalaCompiler.isDefined)("Scala")}>
         {library.scalaCompiler.fold(NodeSeq.Empty) { compiler =>
           <properties>
-            <option name="languageLevel" value={compiler.level} />
+            <option name="languageLevel" value={"Scala_" + compiler.level.replace('.', '_')} />
             <compiler-classpath>
               {compiler.classpath.map(path => <root url={fs.fileUrlFrom(path)}/>)}
             </compiler-classpath>

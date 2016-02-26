@@ -72,7 +72,7 @@ class ConversionTest {
             Seq("scala-library-2.11.7-sources.jar"),
             Seq("scala-library-2.11.7-javadoc.jar"),
             scalaCompiler = Some(
-              ScalaCompiler("2.11.7",
+              ScalaCompiler("2.11",
                 Seq("scala-library-2.11.7.jar",
                   "scala-compiler-2.11.7.jar",
                   "scala-reflect-2.11.7.jar")))),

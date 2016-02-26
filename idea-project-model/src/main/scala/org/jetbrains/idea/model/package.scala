@@ -15,4 +15,8 @@ package object model {
   implicit class RichFile(val file: File) extends AnyVal {
     def /(path: Path): Path = file.getPath + "/" + path
   }
+
+  type JavaLanguageLevel = String
+
+  type ScalaLanguageLevel = String
 }

@@ -9,6 +9,8 @@ import org.jetbrains.sbt.{structure => sbtStructure}
  * @author Pavel Fatin
  */
 object Converter {
+  private val MajorScalaVersionPattern = "^\\d+\\.\\d+".r
+
   def convert(root: Path, data: sbtStructure.StructureData, jdk: Option[String]): Project = {
     val projects = data.projects
 
@@ -49,7 +51,11 @@ object Converter {
       scalaVersionToClasspath.find {
         case (version, _) => library.name.contains(version)
       }.map {
-        case (version, classpath) => library.copy(scalaCompiler = Some(ScalaCompiler(version, classpath.map(_.getPath))))
+        case (version, classpath) =>
+          val languageLevel = MajorScalaVersionPattern.findFirstIn(version)
+            .getOrElse(throw new RuntimeException("Cannot determine Scala major version: " + version))
+
+          library.copy(scalaCompiler = Some(ScalaCompiler(languageLevel, classpath.map(_.getPath))))
       } getOrElse {
         library
       }

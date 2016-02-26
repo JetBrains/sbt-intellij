@@ -152,7 +152,7 @@ class StorageTest {
           <component name="libraryTable">
             <library name="prefix: scala-sdk" type="Scala">
               <properties>
-                <option name="languageLevel" value="2.11"/>
+                <option name="languageLevel" value="Scala_2_11"/>
                 <compiler-classpath>
                   <root url="file://$USER_HOME$/scala-compiler.jar"/>
                   <root url="file://$USER_HOME$/scala-library.jar"/>
