@@ -47,6 +47,7 @@ class ConversionTest {
 
     val ideaProject =
       Project("name", "base",
+        jdk = Some("1.6"),
         modules = Seq(
           Module("id",
             contentRoots = Seq(
@@ -85,7 +86,7 @@ class ConversionTest {
   }
 
   private def assertConvertedTo(structure: StructureData, expected: Project): Unit = {
-    val actual = Converter.convert("base", structure, None)
+    val actual = Converter.convert("base", structure, Some("1.6"))
 
     if (expected != actual) {
       val printer = new PrettyPrinter(120, 2)

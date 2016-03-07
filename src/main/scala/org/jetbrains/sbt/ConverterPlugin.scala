@@ -14,6 +14,8 @@ import scala.xml.Utility.trim
   * @author Pavel Fatin
   */
 object ConverterPlugin extends Plugin with (State => State) {
+  private val DefaultJdkVersion = Some("1.6")
+
   def convert(state: State) {
     val log = state.log
 
@@ -27,7 +29,7 @@ object ConverterPlugin extends Plugin with (State => State) {
     val structure = StructureExtractor.apply(state, options)
 
     log.info("Converting project to IDEA model...")
-    val project = Converter.convert(currentDirectory, structure, None)
+    val project = Converter.convert(currentDirectory, structure, systemJdkVersion.orElse(DefaultJdkVersion))
 
     log.info("Writing IDEA project definition...")
     Storage.write(new File(currentDirectory), project, "SBT: ", System.getProperty("user.home"))
@@ -44,7 +46,7 @@ object ConverterPlugin extends Plugin with (State => State) {
     val structure = StructureExtractor.apply(state, Options.readFromString(""))
 
     log.info("Converting project to IDEA model...")
-    val project = Converter.convert(currentDirectory, structure, None)
+    val project = Converter.convert(currentDirectory, structure, systemJdkVersion.orElse(DefaultJdkVersion))
 
     val text = trim(Serializer.toXml(project)).mkString
 
@@ -59,6 +61,8 @@ object ConverterPlugin extends Plugin with (State => State) {
         log.info("Done.")
     }
   }
+
+  private def systemJdkVersion: Option[String] = Option(System.getProperty("java.version")).map(_.substring(0, 3))
 
   private def write(file: File, xml: String) {
     val writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), "UTF-8"))

@@ -77,6 +77,7 @@ object Converter {
     Project(
       name = project.name,
       base = root,
+      jdk = jdk,
       modules = (modules ++ buildModules).sortBy(_.name),
       libraries = librariesAndSdks.sortBy(_.name),
       profiles = profiles)
