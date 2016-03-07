@@ -43,7 +43,7 @@ object Storage {
 
   private def toXml(jdk: Option[String], languageLevel: Option[JavaLanguageLevel]): Elem =
     <project version="4">
-      <component name="ProjectRootManager" version="2" languageLevel={text(languageLevel)} default="false" assert-keyword="true" jdk-15="true" project-jdk-name={text(jdk)} project-jdk-type="JavaSDK">
+      <component name="ProjectRootManager" version="2" languageLevel={text(languageLevel)} default={format(languageLevel.isEmpty)} project-jdk-name={text(jdk)} project-jdk-type="JavaSDK">
         <output url="file://$PROJECT_DIR$/classes" />
       </component>
     </project>

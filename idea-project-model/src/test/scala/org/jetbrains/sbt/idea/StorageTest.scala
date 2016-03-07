@@ -82,7 +82,7 @@ class StorageTest {
 
     ".idea/misc.xml" ->
       <project version="4">
-        <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" default="false" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+        <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" default="false" project-jdk-name="1.6" project-jdk-type="JavaSDK">
           <output url="file://$PROJECT_DIR$/classes" />
         </component>
       </project>,
