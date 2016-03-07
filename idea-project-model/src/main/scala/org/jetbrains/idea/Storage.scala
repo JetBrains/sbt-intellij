@@ -34,7 +34,7 @@ object Storage {
     val index = (".idea/modules.xml", trim(toXml(project.modules.map(_.name), moduleDirectory, projectFs)))
     val settings = (".idea/misc.xml", trim(toXml(project.jdk, project.languageLevel.map(s => "JDK_" + s.replace('.', '_')))))
     val modules = project.modules.map(module => (".idea/modules" / s"${module.name}.iml", trim(toXml(module, prefix, moduleFs))))
-    val libraries = project.libraries.map(library => (".idea/libraries" / s"${escape(library.name)}.xml", trim(toXml(library, prefix, moduleFs))))
+    val libraries = project.libraries.map(library => (".idea/libraries" / s"${escape(prefix + library.name)}.xml", trim(toXml(library, prefix, moduleFs))))
     val profiles = (".idea/scala_compiler.xml", trim(toXml(project.profiles)))
     Map(index +: settings +: (modules ++ libraries) :+ profiles: _*)
   }

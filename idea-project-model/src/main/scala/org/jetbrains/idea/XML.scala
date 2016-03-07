@@ -12,7 +12,7 @@ private object XML {
 
   // PrettyPrinter relies on hardcoded '\n' line separator - exactly what is needed,
   // because IDEA always uses this line separator in config files, regardless of OS.
-  private val printer = new PrettyPrinter(180, 2) {
+  private val printer = new PrettyPrinter(1024, 2) {
     // Add trailing space in leaf elements
     // (on a par with IDEA, to make file comparison easier).
     override protected def leafTag(n: Node) = {

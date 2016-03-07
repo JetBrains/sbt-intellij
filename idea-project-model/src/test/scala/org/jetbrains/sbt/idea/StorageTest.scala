@@ -133,7 +133,7 @@ class StorageTest {
             </component>
           </module>,
 
-        ".idea/libraries/junit.xml" ->
+        ".idea/libraries/prefix__junit.xml" ->
           <component name="libraryTable">
             <library name="prefix: junit">
               <CLASSES>
@@ -148,7 +148,7 @@ class StorageTest {
             </library>
           </component>,
 
-        ".idea/libraries/scala_sdk.xml" ->
+        ".idea/libraries/prefix__scala_sdk.xml" ->
           <component name="libraryTable">
             <library name="prefix: scala-sdk" type="Scala">
               <properties>
