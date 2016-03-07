@@ -49,7 +49,7 @@ object Converter {
 
     val librariesAndSdks = libraries.map { library =>
       scalaVersionToClasspath.find {
-        case (version, _) => library.name.contains(version)
+        case (version, _) => library.name.startsWith("org.scala-lang:scala-library:" + version)
       }.map {
         case (version, classpath) =>
           val languageLevel = MajorScalaVersionPattern.findFirstIn(version)

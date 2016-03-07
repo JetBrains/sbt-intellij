@@ -33,7 +33,7 @@ class ConversionTest {
                   ModuleIdentifier("org.scala-lang", "scala-library", "2.11.7", "jar", ""),
                   Seq(Configuration("compile"))),
                 ModuleDependencyData(
-                  ModuleIdentifier("org.scala-lang", "scala-xml", "2.11.0", "jar", ""),
+                  ModuleIdentifier("org.scala-lang", "scala-xml", "2.11.7", "jar", ""),
                   Seq(Configuration("compile"))))))),
         repository = Some(
           RepositoryData(
@@ -55,7 +55,7 @@ class ConversionTest {
                 excluded = Seq("base/target"))),
             libraryDependencies = Seq(
               LibraryDependency("org.scala-lang:scala-library:2.11.7:jar"),
-              LibraryDependency("org.scala-lang:scala-xml:2.11.0:jar"))),
+              LibraryDependency("org.scala-lang:scala-xml:2.11.7:jar"))),
           Module("id-build", ModuleKind.Sbt,
             outputPaths = Some(OutputPaths(
               "base/project/target/idea-classes",
@@ -77,7 +77,7 @@ class ConversionTest {
                 Seq("scala-library-2.11.7.jar",
                   "scala-compiler-2.11.7.jar",
                   "scala-reflect-2.11.7.jar")))),
-          Library("org.scala-lang:scala-xml:2.11.0:jar", resolved = false)),
+          Library("org.scala-lang:scala-xml:2.11.7:jar", resolved = false)),
         profiles = Seq(
           Profile("SBT 1", ScalaCompilerSettings(optimiseBytecode = true), Seq("id"))
         ))
