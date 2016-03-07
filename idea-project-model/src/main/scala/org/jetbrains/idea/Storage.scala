@@ -10,6 +10,8 @@ import scala.xml.{NodeSeq, Elem, Text, Utility}
  * @author Pavel Fatin
  */
 object Storage {
+  private val ModuleOrLibraryPathPattern = ".idea/(modules|libraries)/".r
+
   def write(root: File, project: Project, prefix: String, home: Path) {
     toXml(project, prefix, home).foreach { case (path, node) =>
       val file = new File(root, path)
@@ -17,7 +19,7 @@ object Storage {
       if (!directory.exists) {
         directory.mkdirs()
       }
-      XML.save(file, node)
+      XML.save(file, node, declaration = ModuleOrLibraryPathPattern.findFirstIn(path).isEmpty)
     }
   }
 

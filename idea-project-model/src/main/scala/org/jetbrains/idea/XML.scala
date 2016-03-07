@@ -36,10 +36,12 @@ private object XML {
   private val Header = s"""<?xml version="1.0" encoding="$Encoding"?>"""
 
   // Improvement over scala.xml.XML.save (to add proper formatting)
-  def save(file: File, node: Node) {
+  def save(file: File, node: Node, declaration: Boolean) {
     write(file, Encoding) { writer =>
-      writer.write(Header)
-      writer.write('\n')
+      if (declaration) {
+        writer.write(Header)
+        writer.write('\n')
+      }
       writer.write(printer.format(node))
     }
   }
